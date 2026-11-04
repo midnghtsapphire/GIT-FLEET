@@ -1,0 +1,64 @@
+# The fleet as a repo collaborator: wakes the member named in a "to:" line on a
+# discussion, issue or PR conversation, and replies under the fleet's GitHub identity.
+# Fleet-signed messages never wake anyone (see BOARD_PROTOCOL.md, "Loop guard").
+# Pin each action to a full commit SHA before relying on this (gh-actions-lock).
+name: fleet-board
+
+on:
+  discussion:
+    types: [created]
+  discussion_comment:
+    types: [created]
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  discussions: write
+
+concurrency:
+  group: fleet-board-${{ github.event.discussion.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  respond:
+    if: >-
+      contains(github.event.comment.body || github.event.issue.body || github.event.discussion.body, 'to:') &&
+      !contains(github.event.comment.body || github.event.issue.body || github.event.discussion.body, '<!-- fleet:')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Identity: the fleet's GitHub App if set up (posts as <app>[bot]), else a bot
+      # account's token (FLEET_BOT_TOKEN), else the default github-actions[bot].
+      - name: Get the fleet's GitHub App token
+        id: app
+        if: vars.FLEET_APP_ID != ''
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.FLEET_APP_ID }}
+          private-key: ${{ secrets.FLEET_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.app.outputs.token || secrets.FLEET_BOT_TOKEN || secrets.FLEET_STANDARDS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Answer the thread
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ steps.app.outputs.token || secrets.FLEET_BOT_TOKEN || github.token }}
+        run: node runner/fleet.mjs respond --event "$GITHUB_EVENT_PATH"
+      - name: Open a draft PR with any files the reply wrote
+        if: always()
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token || secrets.FLEET_BOT_TOKEN || github.token }}
+          FLEET_GIT_NAME: ${{ vars.FLEET_GIT_NAME }}
+          FLEET_GIT_EMAIL: ${{ vars.FLEET_GIT_EMAIL }}
+          THREAD: ${{ github.event.discussion.number || github.event.issue.number }}
+        run: bash .github/scripts/draft-pr.sh "thread-$THREAD"

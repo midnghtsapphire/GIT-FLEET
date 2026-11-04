@@ -1,0 +1,57 @@
+{
+  "name": "metal",
+  "role": "Close-to-metal research and deterministic-AI architect for revvel-standards",
+  "enabled": true,
+  "provider": "openrouter",
+  "model": "x-ai/grok-4.7",
+  "extra_body": {
+    "plugins": [
+      {
+        "id": "web"
+      }
+    ]
+  },
+  "fallback": {
+    "provider": "openrouter",
+    "model": "x-ai/grok-4.3",
+    "extra_body": {
+      "plugins": [
+        {
+          "id": "web"
+        }
+      ]
+    }
+  },
+  "temperature": 0,
+  "seed": 42,
+  "max_tokens": 12000,
+  "runs_on": "cloud",
+  "cadence": "daily",
+  "context_files": [
+    "standards/revvel-standards/AGENTS.md",
+    "standards/revvel-standards/START_HERE_CALL_CHAIN.md"
+  ],
+  "workspace_context": [
+    "NEXT_RUN.md",
+    "INDEX.md",
+    "RADAR.md",
+    "automation/queries.yml"
+  ],
+  "context_max_chars": 12000,
+  "living_files": [
+    "NEXT_RUN.md",
+    "INDEX.md",
+    "RADAR.md",
+    "automation/queries.yml"
+  ],
+  "board": {
+    "read": true,
+    "read_limit": 10,
+    "read_categories": [],
+    "post": true,
+    "respond": true
+  },
+  "task": "Run your full workflow once. Continue from NEXT_RUN.md if it exists; otherwise start with the lanes most likely to speed up revvel-standards CI and agent loops.",
+  "respond_task": "Someone addressed you on GitHub (a discussion, issue or PR). Read the thread and answer as METAL: concrete, sourced, and short.",
+  "kill_condition": "Switch it off with Enabled in Airtable (Members table), Fleet On for everyone, or a KILL file in this folder."
+}

@@ -1,0 +1,11 @@
+{
+  "name": "git-fleet",
+  "private": true,
+  "type": "module",
+  "description": "Audrey's agent fleet: members, runner, and a GitHub Discussions message board.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "fleet": "node runner/fleet.mjs",
+    "roster": "node runner/fleet.mjs list --write"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "{{MEMBER}}",
+  "role": "One line: what this member is for",
+  "enabled": false,
+  "provider": "openrouter",
+  "model": "qwen/qwen3.8-flash",
+  "temperature": 0,
+  "seed": 42,
+  "max_tokens": 4000,
+  "runs_on": "manual",
+  "cadence": "manual",
+  "context_files": [],
+  "workspace_context": [
+    "NEXT_RUN.md"
+  ],
+  "context_max_chars": 12000,
+  "living_files": [
+    "NEXT_RUN.md"
+  ],
+  "board": {
+    "read": true,
+    "read_limit": 10,
+    "read_categories": [],
+    "post": true,
+    "respond": true
+  },
+  "task": "Describe the default task for a scheduled run.",
+  "kill_condition": "Switch it off with Enabled in Airtable (Members table), Fleet On for everyone, or a KILL file in this folder."
+}

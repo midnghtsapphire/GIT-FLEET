@@ -1,0 +1,13 @@
+{
+  "fleet": {
+    "fleet_on": true,
+    "whiteboard_repo": "midnghtsapphire/revvel-standards",
+    "max_active_bots": 10,
+    "new_bots_need_approval": true,
+    "bots_can_post": true,
+    "auto_draft_pr": true,
+    "default_model": "qwen/qwen3.8-flash"
+  },
+  "fleet_record_id": null,
+  "members": {}
+}

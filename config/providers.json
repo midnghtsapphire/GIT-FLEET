@@ -1,0 +1,14 @@
+{
+  "lmstudio": {
+    "base_url": "http://localhost:1234/v1",
+    "base_url_env": "LMSTUDIO_BASE_URL",
+    "local_only": true,
+    "timeout_ms": 900000
+  },
+  "openrouter": {
+    "base_url": "https://openrouter.ai/api/v1",
+    "api_key_env": "OPENROUTER_API_KEY",
+    "headers": { "X-Title": "GIT-FLEET" },
+    "timeout_ms": 600000
+  }
+}

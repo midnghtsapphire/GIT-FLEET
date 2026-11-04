@@ -1,0 +1,62 @@
+# Scheduled cloud runs. Results land in a draft PR; agents never merge.
+# Pin each action to a full commit SHA before relying on this (gh-actions-lock).
+name: fleet-cloud
+
+on:
+  schedule:
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+    inputs:
+      member:
+        description: Run just this member (blank = every cloud member that is due)
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  discussions: write
+
+concurrency:
+  group: fleet-cloud
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      # Identity: see the comment in fleet-board.yml.
+      - name: Get the fleet's GitHub App token
+        id: app
+        if: vars.FLEET_APP_ID != ''
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.FLEET_APP_ID }}
+          private-key: ${{ secrets.FLEET_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ steps.app.outputs.token || secrets.FLEET_BOT_TOKEN || secrets.FLEET_STANDARDS_TOKEN || github.token }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run fleet members
+        env:
+          MEMBER: ${{ inputs.member }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          GITHUB_TOKEN: ${{ steps.app.outputs.token || secrets.FLEET_BOT_TOKEN || github.token }}
+        run: |
+          if [ -n "$MEMBER" ]; then
+            node runner/fleet.mjs run "$MEMBER"
+          else
+            node runner/fleet.mjs due --where cloud
+          fi
+      - name: Open a draft PR with the results
+        if: always()
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token || secrets.FLEET_BOT_TOKEN || github.token }}
+          FLEET_GIT_NAME: ${{ vars.FLEET_GIT_NAME }}
+          FLEET_GIT_EMAIL: ${{ vars.FLEET_GIT_EMAIL }}
+        run: bash .github/scripts/draft-pr.sh cloud
