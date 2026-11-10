@@ -21,3 +21,8 @@
   exit code zero and Ready state, and retained exact nonsecret operator snapshots
   plus failure/success receipt metadata. Source implementation independently
   reviewed and twelve scheduler tests passed. No production release applied.
+
+- 2026-11-10 — Codex review follow-up: refuse both standalone and joined-equals
+  packet override syntax. Thirteen scheduler tests now pass; no existing task
+  or policy was replaced. This enforces the documented immutable-input contract
+  even where a downstream CLI currently ignores the joined spelling.

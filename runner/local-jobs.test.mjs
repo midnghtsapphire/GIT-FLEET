@@ -178,3 +178,11 @@ test('a Git review refuses to omit new untracked source', () => {
   f.config.jobs[0].review = { git: gitBinary, workspace: f.root, base: head }; f.save();
   assert.throws(() => tickLocalJobs(f.path, { invoke: () => assert.fail('untracked source executed') }), /Stage new local source/);
 });
+
+test('both packet override spellings are rejected before execution', () => {
+  const f = fixture();
+  for (const argv of [['node', '--packet', f.packet], ['node', `--packet=${f.packet}`]]) {
+    writeFileSync(f.policy, JSON.stringify({ version: 1, skills: { prosecute: { timeout_seconds: 1, argv } } }));
+    assert.throws(() => loadLocalJobs(f.path), /HULL stdin/);
+  }
+});

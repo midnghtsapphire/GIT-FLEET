@@ -73,7 +73,10 @@ export function loadLocalJobs(path) {
     }
     // The first draft permitted a matching --packet override, but a later edit
     // could race the fingerprint. HULL stdin now uses an immutable run snapshot.
-    if (rule.argv?.includes('--packet')) throw new Error('Use HULL stdin instead of a --packet override');
+    // Earlier guard matched only a standalone --packet. Refuse joined syntax
+    // too, even if a particular downstream CLI currently ignores that spelling.
+    // if (rule.argv?.includes('--packet')) throw new Error('Use HULL stdin instead of a --packet override');
+    if (rule.argv?.some(arg => typeof arg === 'string' && (arg === '--packet' || arg.startsWith('--packet=')))) throw new Error('Use HULL stdin instead of a --packet override');
     const manifest = read(join(hull.skills, hull.skill, 'SKILL.md'));
     if (job.watch !== undefined && (!Array.isArray(job.watch) || job.watch.some(p => typeof p !== 'string'))) throw new Error('watch must be an array of absolute dependency paths');
     const dependencies = (job.watch ?? []).map(path => [absolute(path, 'watch path'), read(path)]);

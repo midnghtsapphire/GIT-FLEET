@@ -141,3 +141,8 @@ retained under [installed-20261110](installed-20261110/README.md). The live
 configuration path remains the one recorded in the task action; snapshots do
 not silently replace it. Pausing uses the Disable-ScheduledTask command above.
 No product deployment, payment, model benchmark or customer outcome is implied.
+
+Review follow-up: both `--packet PATH` and `--packet=PATH` are refused before
+HULL invocation. The scheduler suite now passes thirteen tests. Earlier
+twelve-test and 78-test runtime receipts remain valid evidence of their stated
+source versions; the source guard addition does not authorize another command.
