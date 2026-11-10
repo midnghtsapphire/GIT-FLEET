@@ -15,3 +15,9 @@
   uncertain, and added optional trusted local Git baseline packets with
   untracked-source refusal and concurrent-edit detection. First integrated
   prosecution failure is retained in the operational document.
+
+- 2026-11-10 — Codex: final owned integration passed 78 tests with no provider
+  calls. Registered the separate local-checks Windows task, verified its first
+  exit code zero and Ready state, and retained exact nonsecret operator snapshots
+  plus failure/success receipt metadata. Source implementation independently
+  reviewed and twelve scheduler tests passed. No production release applied.

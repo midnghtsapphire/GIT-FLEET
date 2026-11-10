@@ -120,3 +120,24 @@ successfully but prosecution failed on a distinct-argparse-option false
 positive. The failed HULL, prosecution and scheduler attempts are retained.
 The detector regression/performance correction belongs to revvel-standards.
 An updated end-to-end run is required before enabling the task.
+
+Observed completion, 2026-11-10: the final GIT-FLEET → HULL → prosecutor run
+executed **78 tests, all passed**, with zero findings and zero provider calls.
+Scheduler attempt 90859d51-48aa-45f9-a72b-612a72765001 passed; prosecution run
+d8134255-b14b-41de-88c0-4e40245e3811 checked source commit 58a2d527183882c428e2255d56588e71bd4d26a0
+and its actual worktree-diff hash. Its check duration was 6.729 seconds.
+
+Registered `GIT-FLEET local checks` on Audrey's Windows machine, polling every
+15 minutes in local-only mode. Daily cadence uses America/Denver. Observed
+first execution at 12:09:14 MST on 10 November: LastTaskResult=0, Ready state,
+zero missed runs. The unchanged-source execution correctly reuses the current
+day's passed attempt; the source-change and next-day paths are tested above.
+The initial one-minute trigger remains alongside the 15-minute repetition.
+No existing fleet task was replaced. This is a current-user task on this
+machine; it is not a hosted always-on service when the machine is unavailable.
+
+Exact nonsecret operator configuration snapshots and verification metadata are
+retained under [installed-20261110](installed-20261110/README.md). The live
+configuration path remains the one recorded in the task action; snapshots do
+not silently replace it. Pausing uses the Disable-ScheduledTask command above.
+No product deployment, payment, model benchmark or customer outcome is implied.
