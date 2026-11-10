@@ -560,6 +560,21 @@ const HELP = `GIT-FLEET runner
 `;
 
 async function main() {
+  // 2026-11-10 Codex, Audrey: owned prosecution uses the existing tick but must
+  // return before .env/Airtable/whiteboard/model setup. Never fall through on error.
+  const localArgs = parseArgs(process.argv.slice(2));
+  if (localArgs.flags['local-only']) {
+    if (localArgs.pos[0] !== 'tick' || typeof localArgs.flags.jobs !== 'string') {
+      throw new Error('Use tick --local-only --jobs ABS_OPERATOR_CONFIG');
+    }
+    const { tickLocalJobs } = await import('./local-jobs.mjs');
+    const result = tickLocalJobs(localArgs.flags.jobs, {
+      retryFailed: localArgs.flags['retry-failed'] === true,
+      retryUncertain: localArgs.flags['retry-uncertain'] === true,
+    });
+    console.log(JSON.stringify(result));
+    return result.ok;
+  }
   loadEnv();
   SETTINGS = await loadSettings();
   board.setBoardRepo(SETTINGS.fleet.whiteboard_repo);
