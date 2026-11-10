@@ -1,0 +1,36 @@
+{
+  "jobs": [
+    {
+      "id": "revenue-prosecution",
+      "hull": {
+        "skill": "merge-prosecutor",
+        "entry": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\scripts\\local-hull.py",
+        "python": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\.venv\\Scripts\\python.exe",
+        "receipts": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\review\\owned-prosecution-20261110\\hull-receipts",
+        "policy": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\review\\owned-prosecution-20261110\\hull-policy.json",
+        "skills": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\revvel-shipping-continuation\\skills"
+      },
+      "watch": [
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\review\\owned-prosecution-20261110\\prosecution-policy.json",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\revvel-shipping-continuation\\products\\merge-prosecutor\\action\\run-prosecutor.mjs",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\revvel-shipping-continuation\\products\\merge-prosecutor\\action\\local-prosecution.mjs",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\git-fleet-shipping\\runner\\local-jobs.mjs",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\scripts\\local-hull.py",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\orchestrator\\metal_orchestrator\\__init__.py",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\orchestrator\\metal_orchestrator\\__main__.py",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\orchestrator\\metal_orchestrator\\handoff.py",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\orchestrator\\metal_orchestrator\\local_execution.py",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\orchestrator\\metal_orchestrator\\prompt_generator.py",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\oaudrey-hull-daily\\orchestrator\\metal_orchestrator\\router.py"
+      ],
+      "review": {
+        "base": "b12e6025d8bd9cf8d70bd8227aa13e4e89d48661",
+        "git": "C:\\Program Files\\Git\\cmd\\git.exe",
+        "workspace": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\revvel-shipping-continuation"
+      }
+    }
+  ],
+  "version": 1,
+  "state": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\review\\owned-prosecution-20261110\\journal.sqlite",
+  "timezone": "America/Denver"
+}

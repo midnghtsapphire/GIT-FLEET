@@ -154,3 +154,17 @@ Both use a GitHub App identity if you set the `FLEET_APP_ID` variable and the `F
 3. Fill in `.env`, run `gh auth login`, then run `node runner/fleet.mjs settings init`.
 4. Add revvel-standards as a submodule (see `standards/README.md`).
 5. Register the timer with `schedules\local\register-task.ps1`.
+
+## Owned prosecution checks — 10 November 2026
+
+The existing `tick` now also accepts `--local-only --jobs ABS_CONFIG`. This mode
+returns before loading `.env`, Airtable, the whiteboard or models. It schedules
+only operator-configured HULL skills on a changed local packet or once per
+America/Denver calendar day; execution, command policy and receipts stay in HULL.
+No GitHub account, hosted runner, App or model provider is needed for this mode.
+
+See [the complete configuration, recovery and validation contract](schedules/local/OWNED-CHECKS.md).
+Use `register-task.ps1 -LocalOnly -Jobs ABS_CONFIG` for the separate
+`GIT-FLEET local checks` task. Existing fleet tasks and the legacy tick are
+preserved. Node 22.13+ with built-in SQLite is required for local checks; existing
+model/whiteboard commands retain their original Node requirements.

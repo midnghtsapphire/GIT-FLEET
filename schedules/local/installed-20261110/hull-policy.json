@@ -1,0 +1,19 @@
+{
+  "skills": {
+    "merge-prosecutor": {
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "products/merge-prosecutor/action/run-prosecutor.mjs",
+        "--local",
+        "--policy",
+        "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\review\\owned-prosecution-20261110\\prosecution-policy.json"
+      ],
+      "cwd": ".",
+      "manifest_sha256": "2f7da56a70e4104a436e1268cab0956f794cc3a669b924e243e090e1bc1f932d",
+      "timeout_seconds": 240
+    }
+  },
+  "version": 1,
+  "workspace": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\revvel-shipping-continuation",
+  "environment": []
+}

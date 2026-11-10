@@ -1,0 +1,25 @@
+{
+  "receipts": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\review\\owned-prosecution-20261110\\prosecutor-receipts",
+  "version": 1,
+  "workspace": "C:\\Users\\lopez\\Documents\\Codex\\2026-11-10\\mak\\work\\revvel-shipping-continuation",
+  "checks": [
+    {
+      "name": "owned-revenue-and-prosecution",
+      "cwd": ".",
+      "argv": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "--test",
+        "products/merge-prosecutor/tests/prosecutor.test.js",
+        "products/merge-prosecutor/tests/local-prosecution.test.js",
+        "products/revenue-billing/lago.test.mjs",
+        "products/revenue-billing/checkout.test.mjs",
+        "products/revenue-billing/webhook.test.mjs",
+        "templates/cicd/static-runtime.test.mjs",
+        "templates/cicd/deploy-static.test.mjs",
+        "tests/skills-vault-structure.test.js",
+        "tests/llm-spend-gate-coverage.test.js"
+      ],
+      "timeout_ms": 180000
+    }
+  ]
+}
