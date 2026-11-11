@@ -21,7 +21,11 @@ if ($LocalOnly) {
   if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
     throw "Task '$taskName' already exists; inspect it rather than replacing it"
   }
-  $localAction = New-ScheduledTaskAction -Execute 'conhost.exe' -Argument "--headless `"$node`" runner\fleet.mjs tick --local-only --jobs `"$resolvedJobs`"" -WorkingDirectory $root
+  # Retired: conhost returned zero even when Node reported a failed check.
+  # $localAction = New-ScheduledTaskAction -Execute 'conhost.exe' -Argument "--headless `"$node`" runner\fleet.mjs tick --local-only --jobs `"$resolvedJobs`"" -WorkingDirectory $root
+  $launcher = Join-Path $PSScriptRoot 'run-local-checks.ps1'
+  $powershell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+  $localAction = New-ScheduledTaskAction -Execute $powershell -Argument "-NoProfile -NonInteractive -WindowStyle Hidden -File `"$launcher`" -Node `"$node`" -Jobs `"$resolvedJobs`"" -WorkingDirectory $root
   $localTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) -RepetitionInterval (New-TimeSpan -Minutes $Every)
   $localSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew -StartWhenAvailable
   Register-ScheduledTask -TaskName $taskName -Action $localAction -Trigger $localTrigger -Settings $localSettings `
