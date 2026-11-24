@@ -93,3 +93,28 @@ test('missing local model records each due member failure and makes no model cal
     assert.match(readFileSync(join(fleet.root, 'members', name, 'learnings.md'), 'utf8'), /requires LMSTUDIO_MODEL/);
   }
 });
+
+test('local-first records a refusal for members that need the web plugin', (t) => {
+  const fleet = fixture(t, ['gamma']);
+  writeFileSync(join(fleet.root, 'members', 'gamma', 'member.json'), JSON.stringify({
+    cadence: 'manual', provider: 'openrouter', model: 'member-paid',
+    task: 'Research with web search.',
+    extra_body: { plugins: [{ id: 'web' }] },
+  }));
+  const result = fleet.run(['run', 'gamma']);
+  assert.equal(result.status, 1, result.stderr);
+  assert.throws(() => fleet.calls(), { code: 'ENOENT' });
+  assert.match(fleet.failure('gamma'), /web search plugin/);
+});
+
+test('local-first ignores non-web plugins', (t) => {
+  const fleet = fixture(t, ['gamma']);
+  writeFileSync(join(fleet.root, 'members', 'gamma', 'member.json'), JSON.stringify({
+    cadence: 'manual', provider: 'openrouter', model: 'member-paid',
+    task: 'Write a report.',
+    extra_body: { plugins: [{ id: 'code-interpreter' }] },
+  }));
+  const result = fleet.run(['run', 'gamma']);
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(fleet.calls(), [local]);
+});

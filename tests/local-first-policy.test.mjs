@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { localFirstAttempts, shouldRetryAfterFailure } from '../runner/local-first-policy.mjs';
+import { localFirstAttempts, webPluginConflict, shouldRetryAfterFailure } from '../runner/local-first-policy.mjs';
 
 test('disabled mode preserves the original member routing', () => {
   assert.equal(localFirstAttempts({}), null);
@@ -25,4 +25,11 @@ test('explicit fallback uses the free OpenRouter router only', () => {
 test('do not retry after applying a model response has started', () => {
   assert.equal(shouldRetryAfterFailure(false), true);
   assert.equal(shouldRetryAfterFailure(true), false);
+});
+
+test('local-first refuses members that require the OpenRouter web plugin', () => {
+  assert.match(webPluginConflict({ extra_body: { plugins: [{ id: 'web' }] } }), /web search plugin/);
+  assert.match(webPluginConflict({ extra_body: { plugins: [{ id: 'web' }, { id: 'other' }] } }), /web search plugin/);
+  assert.equal(webPluginConflict({ extra_body: { plugins: [{ id: 'code-interpreter' }] } }), null);
+  assert.equal(webPluginConflict({}), null);
 });

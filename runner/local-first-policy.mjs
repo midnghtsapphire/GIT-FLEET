@@ -14,3 +14,15 @@ export function localFirstAttempts(env = process.env) {
 export function shouldRetryAfterFailure(outputReceived) {
   return outputReceived === false;
 }
+
+// Web search is the fleet's only tool and it comes from OpenRouter's attached
+// plugin (see templates/fleet-contract.md). Local-first routes cannot carry it:
+// LM Studio ignores OpenRouter-specific options and the free router must stay
+// free. Refuse such research runs instead of silently removing the tool.
+export function webPluginConflict(cfg) {
+  const plugins = cfg?.extra_body?.plugins;
+  if (Array.isArray(plugins) && plugins.some((p) => p?.id === 'web')) {
+    return 'member requires the web search plugin (extra_body.plugins), which local-first mode cannot provide; disable FLEET_LOCAL_FIRST or drop the web plugin from this member';
+  }
+  return null;
+}

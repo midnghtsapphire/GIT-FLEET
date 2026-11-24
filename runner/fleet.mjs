@@ -10,7 +10,7 @@ import { join, resolve, dirname, sep, normalize, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import * as board from './board.mjs';
-import { localFirstAttempts, shouldRetryAfterFailure } from './local-first-policy.mjs';
+import { localFirstAttempts, webPluginConflict, shouldRetryAfterFailure } from './local-first-policy.mjs';
 import { loadSettings, airtableOn, createRows, updateRow, toColumns, initSchema, DEFAULT_FLEET, FLEET_COLUMNS } from './settings.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -158,7 +158,11 @@ async function buildMessages(member, task) {
 function attemptsFor(cfg, flags) {
   // 2026-11-24: explicit local-first mode takes precedence over member/CLI models.
   const localFirst = localFirstAttempts();
-  if (localFirst) return localFirst;
+  if (localFirst) {
+    const conflict = webPluginConflict(cfg);
+    if (conflict) throw new Error(conflict);
+    return localFirst;
+  }
   if (flags.provider) return [{ provider: flags.provider, model: flags.model ?? cfg.model }];
   const list = [{ provider: cfg.provider, model: flags.model ?? cfg.model, extra_body: cfg.extra_body }];
   if (cfg.fallback) list.push(cfg.fallback);
@@ -558,7 +562,7 @@ const HELP = `GIT-FLEET runner
                                   (once, in an empty base), then fills rows; sync adds missing rows
   list [--write]                  show the roster (--write regenerates ROSTER.md)
   run <member> [options]          run one member now
-      --provider <p> --model <m>  override the model (no fallback)
+      --provider <p> --model <m>  override the model (no fallback; ignored when FLEET_LOCAL_FIRST=1)
       --task "<text>"             override the task
       --dry-run                   show what would be sent, call nothing
       --no-post                   don't post to the whiteboard
