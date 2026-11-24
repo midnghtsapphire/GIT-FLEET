@@ -10,6 +10,7 @@ import { join, resolve, dirname, sep, normalize, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import * as board from './board.mjs';
+import { localFirstAttempts } from './local-first-policy.mjs';
 import { loadSettings, airtableOn, createRows, updateRow, toColumns, initSchema, DEFAULT_FLEET, FLEET_COLUMNS } from './settings.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -155,6 +156,9 @@ async function buildMessages(member, task) {
 }
 
 function attemptsFor(cfg, flags) {
+  // 2026-11-24: explicit local-first mode takes precedence over member/CLI models.
+  const localFirst = localFirstAttempts();
+  if (localFirst) return localFirst;
   if (flags.provider) return [{ provider: flags.provider, model: flags.model ?? cfg.model }];
   const list = [{ provider: cfg.provider, model: flags.model ?? cfg.model, extra_body: cfg.extra_body }];
   if (cfg.fallback) list.push(cfg.fallback);
@@ -348,9 +352,11 @@ async function runMember(name, flags = {}, { task, replyTo, origin = 'manual' } 
   const runStamp = stamp(started);
   const errors = [];
   for (const attempt of attempts) {
+    let outputReceived = false;
     try {
       console.log(`${name}: calling ${attempt.provider}/${attempt.model} ...`);
       const out = await callModel(attempt, member.cfg, messages);
+      outputReceived = true; // Later steps may have created external side effects.
       const files = writeFiles(out.content, join(member.dir, 'workspace'), runStamp, member.cfg.living_files);
       const posts = flags['no-post'] ? { posted: [], errors: ['--no-post'] } : await postToBoard(out.content, member, runStamp, `${attempt.provider}/${out.model}`, replyTo);
       const requests = await handleRequests(out.content, member);
@@ -366,6 +372,7 @@ async function runMember(name, flags = {}, { task, replyTo, origin = 'manual' } 
       return true;
     } catch (e) {
       errors.push(`${attempt.provider}/${attempt.model}: ${e.message}`);
+      if (outputReceived) break; // Never replay a task after applying its output starts.
     }
   }
   saveRun(name, `${runStamp}-failed.md`, { member: name, origin, started: started.toISOString() }, errors.map((e) => `- ${e}`).join('\n'));
