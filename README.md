@@ -168,3 +168,20 @@ Use `register-task.ps1 -LocalOnly -Jobs ABS_CONFIG` for the separate
 `GIT-FLEET local checks` task. Existing fleet tasks and the legacy tick are
 preserved. Node 22.13+ with built-in SQLite is required for local checks; existing
 model/whiteboard commands retain their original Node requirements.
+
+
+## Local-first model routing (optional)
+
+On the PC running the fleet, start LM Studio's local server and load one chat model. In the existing local .env file, set:
+
+```text
+FLEET_LOCAL_FIRST=1
+LMSTUDIO_MODEL=<exact loaded chat model ID>
+FLEET_FREE_FALLBACK=1
+```
+
+With local-first enabled, the runner tries this LM Studio model first for each member. The optional fallback uses only OpenRouter's `openrouter/free` router and needs the existing OpenRouter key; omit `FLEET_FREE_FALLBACK` for local-only operation. This mode takes precedence over per-member and command-line model selection, so existing paid member settings cannot silently be used as fallbacks. Keep the model server on the same machine as the PC timer. A cloud runner's localhost is a different machine.
+
+Review the selection without a model call using `node runner/fleet.mjs run <member> --dry-run --no-post`. Missing `LMSTUDIO_MODEL` stops the local-first route. Failed attempts are recorded by the existing runner. A failed output-processing step does not retry a different model because earlier file or posting steps may already have occurred.
+
+This adds no notification channel, persistent restart checkpoint or automatic deployment. LM Studio must already be running and have the named model loaded. Existing timer and member settings are not changed by this update.
