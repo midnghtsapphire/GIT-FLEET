@@ -342,15 +342,21 @@ async function runMember(name, flags = {}, { task, replyTo, origin = 'manual' } 
   const why = blockedReason(member, flags);
   if (why) { console.log(`skip ${name}: ${why}`); return true; }
   const { messages, missing, boardError } = await buildMessages(member, task ?? (typeof flags.task === 'string' ? flags.task : member.cfg.task));
-  const attempts = attemptsFor(member.cfg, flags);
+  const started = new Date();
+  const runStamp = stamp(started);
+  const errors = [];
+  let attempts = [];
+  try {
+    attempts = attemptsFor(member.cfg, flags);
+  } catch (e) {
+    if (flags['dry-run']) throw e;
+    errors.push(e.message);
+  }
   if (flags['dry-run']) {
     console.log(JSON.stringify({ member: name, settings: SETTINGS.source, attempts, missing_context: missing, board_error: boardError,
       system_chars: messages[0].content.length, task: messages[1].content }, null, 2));
     return true;
   }
-  const started = new Date();
-  const runStamp = stamp(started);
-  const errors = [];
   for (const attempt of attempts) {
     let outputReceived = false;
     try {
