@@ -10,7 +10,7 @@ import { join, resolve, dirname, sep, normalize, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import * as board from './board.mjs';
-import { localFirstAttempts } from './local-first-policy.mjs';
+import { localFirstAttempts, shouldRetryAfterFailure } from './local-first-policy.mjs';
 import { loadSettings, airtableOn, createRows, updateRow, toColumns, initSchema, DEFAULT_FLEET, FLEET_COLUMNS } from './settings.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -372,7 +372,7 @@ async function runMember(name, flags = {}, { task, replyTo, origin = 'manual' } 
       return true;
     } catch (e) {
       errors.push(`${attempt.provider}/${attempt.model}: ${e.message}`);
-      if (outputReceived) break; // Never replay a task after applying its output starts.
+      if (!shouldRetryAfterFailure(outputReceived)) break; // Never replay applied output.
     }
   }
   saveRun(name, `${runStamp}-failed.md`, { member: name, origin, started: started.toISOString() }, errors.map((e) => `- ${e}`).join('\n'));
