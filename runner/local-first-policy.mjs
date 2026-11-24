@@ -9,3 +9,8 @@ export function localFirstAttempts(env = process.env) {
   }
   return attempts;
 }
+
+// A model response may already have produced files or posts; never replay then.
+export function shouldRetryAfterFailure(outputReceived) {
+  return outputReceived === false;
+}
