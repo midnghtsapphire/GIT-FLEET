@@ -10,6 +10,7 @@ import { join, resolve, dirname, sep, normalize, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import * as board from './board.mjs';
+import { localFirstAttempts, webPluginConflict, shouldRetryAfterFailure } from './local-first-policy.mjs';
 import { loadSettings, airtableOn, createRows, updateRow, toColumns, initSchema, DEFAULT_FLEET, FLEET_COLUMNS } from './settings.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -155,6 +156,13 @@ async function buildMessages(member, task) {
 }
 
 function attemptsFor(cfg, flags) {
+  // 2026-11-24: explicit local-first mode takes precedence over member/CLI models.
+  const localFirst = localFirstAttempts();
+  if (localFirst) {
+    const conflict = webPluginConflict(cfg);
+    if (conflict) throw new Error(conflict);
+    return localFirst;
+  }
   if (flags.provider) return [{ provider: flags.provider, model: flags.model ?? cfg.model }];
   const list = [{ provider: cfg.provider, model: flags.model ?? cfg.model, extra_body: cfg.extra_body }];
   if (cfg.fallback) list.push(cfg.fallback);
@@ -338,19 +346,27 @@ async function runMember(name, flags = {}, { task, replyTo, origin = 'manual' } 
   const why = blockedReason(member, flags);
   if (why) { console.log(`skip ${name}: ${why}`); return true; }
   const { messages, missing, boardError } = await buildMessages(member, task ?? (typeof flags.task === 'string' ? flags.task : member.cfg.task));
-  const attempts = attemptsFor(member.cfg, flags);
+  const started = new Date();
+  const runStamp = stamp(started);
+  const errors = [];
+  let attempts = [];
+  try {
+    attempts = attemptsFor(member.cfg, flags);
+  } catch (e) {
+    if (flags['dry-run']) throw e;
+    errors.push(e.message);
+  }
   if (flags['dry-run']) {
     console.log(JSON.stringify({ member: name, settings: SETTINGS.source, attempts, missing_context: missing, board_error: boardError,
       system_chars: messages[0].content.length, task: messages[1].content }, null, 2));
     return true;
   }
-  const started = new Date();
-  const runStamp = stamp(started);
-  const errors = [];
   for (const attempt of attempts) {
+    let outputReceived = false;
     try {
       console.log(`${name}: calling ${attempt.provider}/${attempt.model} ...`);
       const out = await callModel(attempt, member.cfg, messages);
+      outputReceived = true; // Later steps may have created external side effects.
       const files = writeFiles(out.content, join(member.dir, 'workspace'), runStamp, member.cfg.living_files);
       const posts = flags['no-post'] ? { posted: [], errors: ['--no-post'] } : await postToBoard(out.content, member, runStamp, `${attempt.provider}/${out.model}`, replyTo);
       const requests = await handleRequests(out.content, member);
@@ -366,6 +382,7 @@ async function runMember(name, flags = {}, { task, replyTo, origin = 'manual' } 
       return true;
     } catch (e) {
       errors.push(`${attempt.provider}/${attempt.model}: ${e.message}`);
+      if (!shouldRetryAfterFailure(outputReceived)) break; // Never replay applied output.
     }
   }
   saveRun(name, `${runStamp}-failed.md`, { member: name, origin, started: started.toISOString() }, errors.map((e) => `- ${e}`).join('\n'));
@@ -545,7 +562,7 @@ const HELP = `GIT-FLEET runner
                                   (once, in an empty base), then fills rows; sync adds missing rows
   list [--write]                  show the roster (--write regenerates ROSTER.md)
   run <member> [options]          run one member now
-      --provider <p> --model <m>  override the model (no fallback)
+      --provider <p> --model <m>  override the model (no fallback; ignored when FLEET_LOCAL_FIRST=1)
       --task "<text>"             override the task
       --dry-run                   show what would be sent, call nothing
       --no-post                   don't post to the whiteboard
